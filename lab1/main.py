@@ -25,11 +25,11 @@ def gradient_descent(X, y, theta, alpha, iterations):
     return theta, cost_history
 
 # Загрузка данных ex1data1.txt
-data1 = pd.read_csv("ex1data1.txt", header=None, names=["Population", "Profit"])
+data1 = pd.read_csv("data/ex1data1.txt", header=None, names=["Population", "Profit"])
 print(data1.head())
 
 # Загрузка данных ex1data2.txt
-data2 = pd.read_csv("ex1data2.txt", header=None, names=["Size", "Rooms", "Price"])
+data2 = pd.read_csv("data/ex1data2.txt", header=None, names=["Size", "Rooms", "Price"])
 print(data2.head())
 
 # Подготовка данных
@@ -140,12 +140,13 @@ theta_norm = np.zeros(X_norm.shape[1])
 theta_nonorm = np.zeros(X_nonorm.shape[1])
 
 # Параметры градиентного спуска
-alpha = 0.01
-iterations = 200
+alpha = 0.1
+alpha1 = 0.00000001
+iterations = 50
 
 # Выполнение градиентного спуска
 theta_norm, cost_history_norm = gradient_descent_vectorized(X_norm, y_norm, theta_norm, alpha, iterations)
-theta_nonorm, cost_history_nonorm = gradient_descent_vectorized(X_nonorm, y_nonorm, theta_nonorm, alpha, iterations)
+theta_nonorm, cost_history_nonorm = gradient_descent_vectorized(X_nonorm, y_nonorm, theta_nonorm, alpha1, iterations)
 
 # Сравнение графиков сходимости
 plt.plot(range(len(cost_history_norm)), cost_history_norm, label="Нормализованные признаки")
@@ -159,21 +160,23 @@ plt.show()
 
 # Функция изменения коэффициента обучения α
 def compare_learning_rates(X, y, theta, alphas, iterations):
-    for alpha in alphas:
-        theta_temp = theta.copy()
-        _, cost_history = gradient_descent_vectorized(X, y, theta_temp, alpha, iterations)
-        plt.plot(range(len(cost_history)), cost_history, label=f"α = {alpha}")
+    for iteration in iterations:
+        for alpha in alphas:
+            theta_temp = theta.copy()
+            _, cost_history = gradient_descent_vectorized(X, y, theta_temp, alpha, iteration)
+            plt.plot(range(len(cost_history)), cost_history, label=f"α = {alpha:.3f}")
 
-    plt.xlabel("Итерации")
-    plt.ylabel("Значение функции потерь")
-    plt.title("Влияние коэффициента обучения на сходимость")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+        plt.xlabel("Итерации")
+        plt.ylabel("Значение функции потерь")
+        plt.title(f"Влияние коэффициента обучения на сходимость ({iteration} итераций)")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
 # Сравнение с различными α
-alphas = [0.001, 0.01, 0.1, 0.3]
-compare_learning_rates(X_norm, y_norm, np.zeros(X_norm.shape[1]), alphas, iterations)
+alphas = np.linspace(0.001, 0.1, 6).tolist()
+iteration_list = np.linspace(50, 150, 3, dtype=int).tolist()
+compare_learning_rates(X_norm, y_norm, np.zeros(X_norm.shape[1]), alphas, iteration_list)
 
 # Функция метода наименьших квадратов
 def normal_equation(X, y):

@@ -7,7 +7,7 @@ from scipy.io import loadmat
 import scipy.io
 
 # Загрузка данных ex2data1.txt
-data1 = pd.read_csv("ex2data1.txt", header=None, names=["Exam 1", "Exam 2", "Admitted"])
+data1 = pd.read_csv("data/ex2data1.txt", header=None, names=["Exam 1", "Exam 2", "Admitted"])
 print(data1.head())
 
 # Построение графика оценок студентов
@@ -47,29 +47,14 @@ def gradient_descent(X, y, theta, alpha, iterations):
 
 # Подготовка данных
 X1 = data1[["Exam 1", "Exam 2"]].values
-X1 = np.c_[np.ones(X1.shape[0]), X1] 
+X1 = np.c_[np.ones(X1.shape[0]), X1]  # Добавляем столбец единичных значений для θ0
 y1 = data1["Admitted"].values
 theta1 = np.zeros(X1.shape[1])
 
 # Обучение модели с использованием градиентного спуска
 alpha = 0.1
-iterations = 200
+iterations = 50
 theta1, cost_history = gradient_descent(X1, y1, theta1, alpha, iterations)
-
-# Построение разделяющей прямой
-x_vals = np.linspace(data1["Exam 1"].min(), data1["Exam 1"].max(), 100)
-y_vals = (theta1[0] + theta1[1] * x_vals) / theta1[2] + 80 # Решение уравнения для вероятности 0.5
-
-# График с разделяющей прямой
-plt.scatter(admitted["Exam 1"], admitted["Exam 2"], marker="o", label="Поступил")
-plt.scatter(not_admitted["Exam 1"], not_admitted["Exam 2"], marker="x", label="Не поступил")
-plt.plot(x_vals, y_vals, color="red", label="Разделяющая прямая")
-plt.xlabel("Оценка по первому экзамену")
-plt.ylabel("Оценка по второму экзамену")
-plt.title("Разделяющая прямая для логистической регрессии")
-plt.legend()
-plt.grid(True)
-plt.show()
 
 # Функция для оптимизации с помощью метода Нелдера-Мида
 def optimize_nelder_mead(theta, X, y):
@@ -84,21 +69,43 @@ def optimize_bfgs(theta, X, y):
 theta_initial = np.zeros(X1.shape[1])
 
 # Оптимизация методом Нелдера-Мида
-theta_nelder_mead = optimize_nelder_mead(theta_initial, X1, y1)
-print("Оптимизированные параметры с помощью метода Нелдера-Мида:", theta_nelder_mead)
+theta_nm = optimize_nelder_mead(theta_initial, X1, y1)
+print("Оптимизированные параметры с помощью Nelder-Mead:", theta_nm)
 
 # Оптимизация методом BFGS
-theta_bfgs = optimize_bfgs(theta_initial, X1, y1)
+theta_bfgs = optimize_bfgs(theta_nm, X1, y1)
 print("Оптимизированные параметры с помощью BFGS:", theta_bfgs)
 
 # Функция предсказания вероятности
-def predict_probabilities(theta, X):
-    return sigmoid(X.dot(theta))
+def predict(theta, X):
+    return sigmoid(X.dot(theta)) > 0.5
 
-pred_probs = predict_probabilities(theta_bfgs, X1)
+# Функция расчета точности
+def get_accuracy(theta, X, y):
+    p = predict(theta, X)
+    return y[p == y].size / y.size * 100
+
+# Рассчитываем точность на обучающей выборке
+print(f'Точность на обучающей выборке: {get_accuracy(theta_bfgs, X1, y1)}%')
+
+# Построение разделяющей прямой
+x_vals = np.linspace(data1["Exam 1"].min(), data1["Exam 1"].max(), 100)
+y_vals = -(theta_bfgs[0] + theta_bfgs[1] * x_vals) / theta_bfgs[2]  # Решение уравнения для вероятности 0.5
+
+# График с разделяющей прямой
+plt.scatter(admitted["Exam 1"], admitted["Exam 2"], marker="o", label="Поступил")
+plt.scatter(not_admitted["Exam 1"], not_admitted["Exam 2"], marker="x", label="Не поступил")
+plt.plot(x_vals, y_vals, color="red", label="Разделяющая прямая")
+plt.xlabel("Оценка по первому экзамену")
+plt.ylabel("Оценка по второму экзамену")
+plt.title("Разделяющая прямая для логистической регрессии")
+plt.legend()
+plt.grid(True)
+plt.show()
+
 
 # Загрузка данных ex2data2.txt
-data2 = pd.read_csv("ex2data2.txt", header=None, names=["Test 1", "Test 2", "Passed"])
+data2 = pd.read_csv("data/ex2data2.txt", header=None, names=["Test 1", "Test 2", "Passed"])
 print(data2.head())
 
 # Построение графика для ex2data2.txt
@@ -163,6 +170,19 @@ grid_points = np.c_[xx.ravel(), yy.ravel()]
 grid_points_poly = poly.transform(grid_points)
 Z = predict_probabilities_control(theta_reg_bfgs, grid_points_poly)
 
+# Функция предсказания вероятности
+def predict(theta, X):
+    return sigmoid(X.dot(theta)) > 0.5
+
+# Функция расчета точности
+def get_accuracy(theta, X, y):
+    p = predict(theta, X)
+    return y[p == y].size / y.size * 100
+
+y_acc = np.array(data2['Passed'])
+# Рассчитываем точность на обучающей выборке
+print(f'Точность на второй обучающей выборке: {get_accuracy(theta_reg_bfgs, X_poly, y_acc)}%')
+
 # Преобразуем предсказания обратно в нужную форму (100, 100)
 Z = Z.reshape(xx.shape)
 
@@ -201,7 +221,7 @@ for lambda_ in lambda_values:
     plt.show()
 
 # Загрузка данных ex2data3.mat
-data = scipy.io.loadmat("ex2data3.mat")
+data = scipy.io.loadmat("data/ex2data3.mat")
 X = data["X"]  # Матрица изображений размерностью (5000, 400)
 y = data["y"]  # Метки классов размерностью (5000, 1)
 
