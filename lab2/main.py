@@ -103,7 +103,6 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-
 # Загрузка данных ex2data2.txt
 data2 = pd.read_csv("data/ex2data2.txt", header=None, names=["Test 1", "Test 2", "Passed"])
 print(data2.head())
@@ -285,6 +284,8 @@ def one_vs_all(X, y, num_labels, alpha, iterations, lambda_):
         theta, _ = gradient_descent_reg(X, y_c, initial_theta, alpha, iterations, lambda_)
         all_theta[c] = theta
 
+        #print(f"Класс {c}: Вес = {_[-1]:.4f}")
+
     return all_theta
 
 # Функция предсказания класса
@@ -294,18 +295,36 @@ def predict_one_vs_all(all_theta, X):
 
 X_with_bias = np.c_[np.ones(X.shape[0]), X]
 
+split_ratio = 0.8
+num_samples = X_with_bias.shape[0]
+
+# Количество примеров в тренировочной выборке
+train_size = int(num_samples * split_ratio)
+
+# Перемешивание индексов
+indices = np.random.permutation(num_samples)
+
+# Разделение на тренировочную и тестовую выборки
+train_indices = indices[:train_size]
+test_indices = indices[train_size:]
+
+X_train = X_with_bias[train_indices]
+X_test = X_with_bias[test_indices]
+y_train = y[train_indices]
+y_test = y[test_indices]
+
 # Параметры обучения
 alpha = 0.1
-iterations = 10000
-lambda_ = 1
+iterations = 7000
+lambda_ = 0.1
 num_labels = 10
 
 # Обучение
-all_theta = one_vs_all(X_with_bias, y, num_labels, alpha, iterations, lambda_)
+all_theta = one_vs_all(X_train, y_train, num_labels, alpha, iterations, lambda_)
 
 # Предсказание
-y_pred = predict_one_vs_all(all_theta, X_with_bias)
+y_pred = predict_one_vs_all(all_theta, X_test)
 
 # Оценка точности
-accuracy = np.mean(y_pred == y) * 100
+accuracy = np.mean(y_pred == y_test) * 100
 print(f"Точность классификации: {accuracy:.2f}%")
