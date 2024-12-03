@@ -1,6 +1,11 @@
 import lab1f
 from sklearn.model_selection import train_test_split
 
+def hash_image(image):
+    return hashlib.sha256(image.tobytes()).hexdigest()
+
+################################################################################################
+
 archive_path = 'notMNIST_small.tar.gz'
 # archive_path = 'notMNIST_large.tar.gz'
 
@@ -35,7 +40,6 @@ print()
 print(f"Балансировка тестовой выборки:")
 lab1f.check_class_balance(y_test, class_names)
 print()
-
 
 lab1f.check_no_duplicates(X_train, X_val, X_test, y_train, y_val, y_test)
 print()
