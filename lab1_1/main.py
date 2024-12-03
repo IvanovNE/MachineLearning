@@ -6,7 +6,6 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 
@@ -69,7 +68,7 @@ def display_random_images(images, labels, class_names, num_images=10):
     plt.tight_layout()
     plt.show()
 
-def check_no_duplicates_in_train(X_train, X_val, X_test, y_train, y_val, y_test):
+def check_no_duplicates(X_train, X_val, X_test, y_train, y_val, y_test):
     X_train_flat = [x.tobytes() for x in X_train]  
     X_val_flat = [x.tobytes() for x in X_val]
     X_test_flat = [x.tobytes() for x in X_test]
@@ -117,7 +116,7 @@ def remove_duplicates_h(X_train, y_train, X_val, y_val, X_test, y_test):
 
     return X_train_cleaned, y_train_cleaned
 
-def evaluate_logistic_regression(X_train, y_train, X_test, y_test, sizes):
+def logistic_regression(X_train, y_train, X_test, y_test, sizes):
     accuracies = []
     
     for size in sizes:
@@ -129,7 +128,7 @@ def evaluate_logistic_regression(X_train, y_train, X_test, y_test, sizes):
         X_train_subset_scaled = scaler.fit_transform(X_train_subset.reshape(X_train_subset.shape[0], -1))
         X_test_scaled = scaler.transform(X_test.reshape(X_test.shape[0], -1))
 
-        clf = LogisticRegression(max_iter=10)
+        clf = LogisticRegression(max_iter=11, class_weight="balanced")
         clf.fit(X_train_subset_scaled, y_train_subset)
 
         y_pred = clf.predict(X_test_scaled)
@@ -138,7 +137,7 @@ def evaluate_logistic_regression(X_train, y_train, X_test, y_test, sizes):
         
     return accuracies
 
-########################################### main #####################################################
+####################################################################################################
 
 images, labels, class_names = load_data(archive_path)
 
@@ -162,19 +161,30 @@ print(f"Размер валидационной выборки: {X_val.shape[0]}
 print(f"Размер тестовой выборки: {X_test.shape[0]}")
 print()
 
-check_no_duplicates_in_train(X_train, X_val, X_test, y_train, y_val, y_test)
+print(f"Балансировка обучающей выборки:")
+check_class_balance(y_train, class_names)
+print()
+print(f"Балансировка валидационной выборки:")
+check_class_balance(y_val, class_names)
+print()
+print(f"Балансировка тестовой выборки:")
+check_class_balance(y_test, class_names)
+print()
+
+
+check_no_duplicates(X_train, X_val, X_test, y_train, y_val, y_test)
 print()
 
 X_train_cleaned, y_train_cleaned = remove_duplicates_h(X_train, y_train, X_val, y_val, X_test, y_test)
 print("Очистка дубликатов в обучающей выборке")
 print()
 
-check_no_duplicates_in_train(X_train_cleaned, X_val, X_test, y_train_cleaned, y_val, y_test)
+check_no_duplicates(X_train_cleaned, X_val, X_test, y_train_cleaned, y_val, y_test)
 print()
 
 sizes = [50, 100, 1000, 15000]
 
-accuracies = evaluate_logistic_regression(X_train_cleaned, y_train_cleaned, X_test, y_test, sizes)
+accuracies = logistic_regression(X_train_cleaned, y_train_cleaned, X_test, y_test, sizes)
 
 print("Размер обучающей выборки и точность классификатора:")
 for i in range(0,4):
