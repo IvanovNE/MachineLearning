@@ -1,8 +1,54 @@
 import lab1f
 from sklearn.model_selection import train_test_split
+import numpy as np
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.callbacks import LearningRateScheduler
+from tensorflow.keras.layers import Flatten
 
-def hash_image(image):
-    return hashlib.sha256(image.tobytes()).hexdigest()
+def create_model(input_shape, hidden_layers, activations, dropout_rate, num_classes):
+
+    model = Sequential()
+
+    model.add(Flatten(input_shape=input_shape))
+
+    model.add(Dense(hidden_layers[0], input_shape=input_shape, activation=activations[0]))
+    model.add(Dropout(dropout_rate))
+
+    for neurons, activation in zip(hidden_layers[1:], activations[1:]):
+        model.add(Dense(neurons, activation=activation))
+        model.add(Dropout(dropout_rate))
+
+    model.add(Dense(num_classes, activation='softmax'))
+    return model
+
+def train_model(model, X_train, y_train, X_val, y_val, initial_lr, epochs, batch_size):
+
+    def scheduler(epoch, lr):
+        return lr * 0.5 if epoch > 5 else lr
+    
+    lr_callback = LearningRateScheduler(scheduler)
+    
+    model.compile(
+        optimizer=SGD(learning_rate=initial_lr),
+        loss='sparse_categorical_crossentropy',
+        metrics=['accuracy']
+    )
+    
+    history = model.fit(
+        X_train, y_train,
+        validation_data=(X_val, y_val),
+        epochs=epochs,
+        batch_size=batch_size,
+        callbacks=[lr_callback],
+        verbose=1
+    )
+    return history
+
+def evaluate_model(model, X_test, y_test):
+    _, accuracy = model.evaluate(X_test, y_test, verbose=0)
+    return accuracy
 
 ################################################################################################
 
@@ -51,5 +97,24 @@ print()
 lab1f.check_no_duplicates(X_train_cleaned, X_val, X_test, y_train_cleaned, y_val, y_test)
 print()
 
-sizes = [50, 100, 1000, 15000]
+hidden_layers = [128, 64, 32] 
+activations = ['relu', 'relu', 'sigmoid'] 
+dropout_rate = 0.2  
+initial_lr = 0.2 
+epochs = 10  
+batch_size = 32
 
+X_train_cleaned = X_train_cleaned.astype('float32') / 255.0
+X_val = X_val.astype('float32') / 255.0
+X_test = X_test.astype('float32') / 255.0
+
+input_shape = (28, 28)
+num_classes = len(np.unique(y_train_cleaned))
+
+model = create_model(input_shape, hidden_layers, activations, dropout_rate, num_classes)
+
+train_model(model, X_train_cleaned, y_train_cleaned, X_val, y_val, initial_lr, epochs, batch_size)
+
+accuracy = evaluate_model(model, X_test, y_test)
+
+print(accuracy)
