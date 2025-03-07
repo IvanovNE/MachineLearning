@@ -97,12 +97,12 @@ print()
 lab1f.check_no_duplicates(X_train_cleaned, X_val, X_test, y_train_cleaned, y_val, y_test)
 print()
 
-hidden_layers = [128, 64, 32] 
-activations = ['relu', 'relu', 'sigmoid'] 
+hidden_layers = [50, 100, 100, 100, 50] 
+activations = ['relu', 'relu', 'relu', 'relu', 'sigmoid'] 
 dropout_rate = 0.2  
 initial_lr = 0.2 
 epochs = 10  
-batch_size = 32
+batch_size = 64
 
 X_train_cleaned = X_train_cleaned.astype('float32') / 255.0
 X_val = X_val.astype('float32') / 255.0

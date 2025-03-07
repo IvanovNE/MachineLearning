@@ -9,8 +9,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 
-archive_path = 'notMNIST_small.tar.gz'
-# archive_path = 'notMNIST_large.tar.gz'
+# archive_path = 'notMNIST_small.tar.gz'
+archive_path = 'notMNIST_large.tar.gz'
 
 def load_data(archive_path):
     images = []
@@ -182,7 +182,7 @@ print()
 check_no_duplicates(X_train_cleaned, X_val, X_test, y_train_cleaned, y_val, y_test)
 print()
 
-sizes = [50, 100, 1000, 15000]
+sizes = [50, 100, 1000, 20000]
 
 accuracies = logistic_regression(X_train_cleaned, y_train_cleaned, X_test, y_test, sizes)
 

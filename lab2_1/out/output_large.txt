@@ -1,0 +1,40 @@
+Ошибка при обработке файла notMNIST_large/A/Um9tYW5hIEJvbGQucGZi.png: cannot identify image file <_io.BytesIO object at 0x0000027D675399E0>
+Ошибка при обработке файла notMNIST_large/A/SG90IE11c3RhcmQgQlROIFBvc3Rlci50dGY=.png: cannot identify image file <_io.BytesIO object at 0x0000027D65379B20>
+Ошибка при обработке файла notMNIST_large/A/RnJlaWdodERpc3BCb29rSXRhbGljLnR0Zg==.png: cannot identify image file <_io.BytesIO object at 0x0000027D66C9CDB0>
+Ошибка при обработке файла notMNIST_large/B/TmlraXNFRi1TZW1pQm9sZEl0YWxpYy5vdGY=.png: cannot identify image file <_io.BytesIO object at 0x0000027D66C9CDB0>
+Ошибка при обработке файла notMNIST_large/D/VHJhbnNpdCBCb2xkLnR0Zg==.png: cannot identify image file <_io.BytesIO object at 0x0000027D66C9CDB0>
+
+Количество изображений: 529114
+Размер изображений: (28, 28)
+Количество классов: 10
+Имена классов: ['J', 'E', 'I', 'A', 'G', 'F', 'B', 'D', 'H', 'C']
+
+Класс J: 52911 изображений
+Класс E: 52912 изображений
+Класс I: 52912 изображений
+Класс A: 52909 изображений
+Класс G: 52912 изображений
+Класс F: 52912 изображений
+Класс B: 52911 изображений
+Класс D: 52911 изображений
+Класс H: 52912 изображений
+Класс C: 52912 изображений
+
+Размер обучающей выборки: 449746
+Размер валидационной выборки: 26456
+Размер тестовой выборки: 52912
+
+Найдены дубликаты между обучающей и валидационной выборками: 4678
+Найдены дубликаты между обучающей и тестовой выборками: 9258
+
+Очистка дубликатов в обучающей выборке
+
+Нет дубликатов между обучающей выборкой и остальными выборками.
+
+Размер обучающей выборки и точность классификатора:
+50: 0.6061951920169337
+100: 0.6764439068642274
+1000: 0.750321288176595
+50000: 0.8276572422134866
+
+max_iter=25
