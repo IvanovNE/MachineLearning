@@ -1,9 +1,3 @@
-Ошибка при обработке файла notMNIST_large/A/Um9tYW5hIEJvbGQucGZi.png: cannot identify image file <_io.BytesIO object at 0x0000027D675399E0>
-Ошибка при обработке файла notMNIST_large/A/SG90IE11c3RhcmQgQlROIFBvc3Rlci50dGY=.png: cannot identify image file <_io.BytesIO object at 0x0000027D65379B20>
-Ошибка при обработке файла notMNIST_large/A/RnJlaWdodERpc3BCb29rSXRhbGljLnR0Zg==.png: cannot identify image file <_io.BytesIO object at 0x0000027D66C9CDB0>
-Ошибка при обработке файла notMNIST_large/B/TmlraXNFRi1TZW1pQm9sZEl0YWxpYy5vdGY=.png: cannot identify image file <_io.BytesIO object at 0x0000027D66C9CDB0>
-Ошибка при обработке файла notMNIST_large/D/VHJhbnNpdCBCb2xkLnR0Zg==.png: cannot identify image file <_io.BytesIO object at 0x0000027D66C9CDB0>
-
 Количество изображений: 529114
 Размер изображений: (28, 28)
 Количество классов: 10

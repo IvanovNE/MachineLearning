@@ -97,18 +97,18 @@ print()
 lab1f.check_no_duplicates(X_train_cleaned, X_val, X_test, y_train_cleaned, y_val, y_test)
 print()
 
-hidden_layers = [50, 100, 100, 100, 50] 
+hidden_layers = [1024, 512, 256] 
 activations = ['relu', 'relu', 'relu', 'relu', 'sigmoid'] 
-dropout_rate = 0.2  
-initial_lr = 0.2 
-epochs = 10  
+dropout_rate = 0.05  
+initial_lr = 0.3
+epochs = 10
 batch_size = 64
 
 X_train_cleaned = X_train_cleaned.astype('float32') / 255.0
 X_val = X_val.astype('float32') / 255.0
 X_test = X_test.astype('float32') / 255.0
 
-input_shape = (28, 28)
+input_shape = (28, 28, 1)
 num_classes = len(np.unique(y_train_cleaned))
 
 model = create_model(input_shape, hidden_layers, activations, dropout_rate, num_classes)
@@ -117,4 +117,5 @@ train_model(model, X_train_cleaned, y_train_cleaned, X_val, y_val, initial_lr, e
 
 accuracy = evaluate_model(model, X_test, y_test)
 
-print(accuracy)
+print()
+print("Точность модели: " + str(accuracy))

@@ -1,6 +1,3 @@
-Ошибка при обработке файла notMNIST_small/A/RGVtb2NyYXRpY2FCb2xkT2xkc3R5bGUgQm9sZC50dGY=.png: cannot identify image file <_io.BytesIO object at 0x000002057E9C5260>
-Ошибка при обработке файла notMNIST_small/F/Q3Jvc3NvdmVyIEJvbGRPYmxpcXVlLnR0Zg==.png: cannot identify image file <_io.BytesIO object at 0x000002057E9C5260>
-
 Количество изображений: 18724
 Размер изображений: (28, 28)
 Количество классов: 10
