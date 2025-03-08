@@ -1,207 +1,198 @@
+import hashlib
+import tarfile
 import numpy as np
-import pandas as pd
+from PIL import Image
+from io import BytesIO
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import time
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
 
-# Функция потерь для линейной регрессии
-def compute_cost(X, y, theta):
-    m = len(y)
-    predictions = X.dot(theta)
-    errors = predictions - y
-    cost = (1 / (2 * m)) * np.sum(errors**2)
-    return cost
+# archive_path = 'notMNIST_small.tar.gz'
+archive_path = 'notMNIST_large.tar.gz'
 
-# Функция градиентного спуска
-def gradient_descent(X, y, theta, alpha, iterations):
-    m = len(y)
-    cost_history = []
+def load_data(archive_path):
+    images = []
+    labels = []
+    class_names = []  
+    valid_extensions = ['.png']  
 
-    for _ in range(iterations):
-        gradients = (1 / m) * X.T.dot(X.dot(theta) - y)
-        theta -= alpha * gradients
-        cost_history.append(compute_cost(X, y, theta))
+    with tarfile.open(archive_path, 'r:gz') as archive:
+        for member in archive.getmembers():
+            if member.isdir():
+                continue  
+
+            folder_name = member.name.split('/')[1]  
+            if folder_name not in class_names:
+                class_names.append(folder_name)  
+
+            label = class_names.index(folder_name)  
+
+            if any(member.name.endswith(ext) for ext in valid_extensions):
+                file_obj = archive.extractfile(member)
+                try:
+                    img = Image.open(BytesIO(file_obj.read()))
+                    img = img.convert('L') 
+                    img_array = np.array(img)
+
+                    images.append(img_array)
+                    labels.append(label)
+                except Exception as e:
+                    print(f"Ошибка при обработке файла {member.name}: {e}")
+            else:
+                print(f"Пропущен файл {member.name} с неподдерживаемым расширением")
+
+    return np.array(images), np.array(labels), class_names
+
+def check_class_balance(labels, class_names):
+    class_counts = np.zeros(len(class_names), dtype=int)
+
+    for label in labels:
+        class_counts[label] += 1
+
+    for i, class_name in enumerate(class_names):
+        print(f"Класс {class_name}: {class_counts[i]} изображений")
+
+def display_random_images(images, labels, class_names, num_images=10):
+    random_indices = np.random.choice(len(images), num_images, replace=False)
+
+    plt.figure(figsize=(10, 5))
     
-    return theta, cost_history
-
-# Загрузка данных ex1data1.txt
-data1 = pd.read_csv("data/ex1data1.txt", header=None, names=["Population", "Profit"])
-print(data1.head())
-
-# Загрузка данных ex1data2.txt
-data2 = pd.read_csv("data/ex1data2.txt", header=None, names=["Size", "Rooms", "Price"])
-print(data2.head())
-
-# Подготовка данных
-data1.insert(0, "Intercept", 1)  # Добавляем столбец для theta0
-X = data1[["Intercept", "Population"]].values
-y = data1["Profit"].values
-theta = np.zeros(2)
-
-# Градиентный спуск
-alpha = 0.01
-iterations = 1500
-theta, cost_history = gradient_descent(X, y, theta, alpha, iterations)
-
-# График 1
-plt.scatter(data1["Population"], data1["Profit"], c='green', marker='x')
-# Построение модели
-plt.plot(data1["Population"], X.dot(theta), color='red')
-
-plt.legend(["Прибыль от населения", "Градиентный спуск"], loc="lower right")
-plt.xlabel("Население города")
-plt.ylabel("Прибыль")
-plt.title("Зависимость прибыли ресторана от населения города")
-plt.grid(True)
-plt.show()
-
-
-theta0_vals = np.linspace(-10, 10, 100)
-theta1_vals = np.linspace(-1, 4, 100)
-J_vals = np.zeros((len(theta0_vals), len(theta1_vals)))
-
-for i, t0 in enumerate(theta0_vals):
-    for j, t1 in enumerate(theta1_vals):
-        t = np.array([t0, t1])
-        J_vals[i, j] = compute_cost(X, y, t)
-
-theta0_vals, theta1_vals = np.meshgrid(theta0_vals, theta1_vals)
-
-# 3D Surface Plot
-fig = plt.figure(figsize=(12, 8))
-ax = fig.add_subplot(111, projection="3d")
-ax.plot_surface(theta0_vals, theta1_vals, J_vals.T, cmap="viridis")
-ax.set_xlabel("θ0")
-ax.set_ylabel("θ1")
-ax.set_zlabel("Потери")
-plt.title("График зависимости функции потерь от параметров модели в виде поверхности")
-plt.show()
-
-# Contour Plot
-plt.contour(theta0_vals, theta1_vals, J_vals.T, levels=np.logspace(-2, 3, 20), cmap="viridis")
-plt.xlabel("θ0")
-plt.ylabel("θ1")
-plt.title("График зависимости функции потерь от параметров модели в виде изолиний")
-plt.plot(theta[0], theta[1], 'rx', markersize=10, label="Оптимизированные параметры модели")
-plt.legend()
-plt.show()
-
-# Функция нормализации признаков
-def feature_normalize(X):
-    mu = np.mean(X, axis=0)
-    sigma = np.std(X, axis=0)
-    X_norm = (X - mu) / sigma
-    return X_norm, mu, sigma
-
-# Нормализация для ex1data2.txt
-X2 = data2[["Size", "Rooms"]].values
-y2 = data2["Price"].values
-X2, mu, sigma = feature_normalize(X2)
-
-# Функция для подготовки данных
-def prepare_features(data, features, target, normalize=True):
-    X = data[features].values
-    y = data[target].values
+    for i, idx in enumerate(random_indices):
+        plt.subplot(2, 5, i + 1)  
+        plt.imshow(images[idx], cmap='gray')  
+        plt.title(f"Class: {class_names[labels[idx]]}") 
+        plt.axis('off')
     
-    if normalize:
-        X, mu, sigma = feature_normalize(X)
-    else:
-        mu, sigma = None, None
+    plt.tight_layout()
+    plt.show()
+
+def check_no_duplicates(X_train, X_val, X_test, y_train, y_val, y_test):
+    X_train_flat = [x.tobytes() for x in X_train]  
+    X_val_flat = [x.tobytes() for x in X_val]
+    X_test_flat = [x.tobytes() for x in X_test]
+
+    train_val_overlap = np.intersect1d(X_train_flat, X_val_flat)
+    train_test_overlap = np.intersect1d(X_train_flat, X_test_flat)
+
+    if len(train_val_overlap) > 0:
+        print(f"Найдены дубликаты между обучающей и валидационной выборками: {len(train_val_overlap)}")
+    if len(train_test_overlap) > 0:
+        print(f"Найдены дубликаты между обучающей и тестовой выборками: {len(train_test_overlap)}")
+    if len(train_val_overlap) == 0 and len(train_test_overlap) == 0:
+        print("Нет дубликатов между обучающей выборкой и остальными выборками.")
+
+def remove_duplicates(X_train, y_train, X_val, y_val, X_test, y_test):
+    X_train_flat = [x.tobytes() for x in X_train]
+    X_val_flat = [x.tobytes() for x in X_val]
+    X_test_flat = [x.tobytes() for x in X_test]
+
+    train_val_overlap_indices = [i for i, x in enumerate(X_train_flat) if x in X_val_flat]
+    train_test_overlap_indices = [i for i, x in enumerate(X_train_flat) if x in X_test_flat]
+
+    overlap_indices = train_val_overlap_indices + train_test_overlap_indices
+
+    X_train_cleaned = np.delete(X_train, overlap_indices, axis=0)
+    y_train_cleaned = np.delete(y_train, overlap_indices)
+
+    return X_train_cleaned, y_train_cleaned
+
+def hash_image(image):
+    return hashlib.sha256(image.tobytes()).hexdigest()
+
+def remove_duplicates_h(X_train, y_train, X_val, y_val, X_test, y_test):
+    X_train_hashes = [hash_image(x) for x in X_train]
+    X_val_hashes = set(hash_image(x) for x in X_val)  
+    X_test_hashes = set(hash_image(x) for x in X_test)
+
+    overlap_indices = []
+    for i, hash_val in enumerate(X_train_hashes):
+        if hash_val in X_val_hashes or hash_val in X_test_hashes:
+            overlap_indices.append(i)
+
+    X_train_cleaned = np.delete(X_train, overlap_indices, axis=0)
+    y_train_cleaned = np.delete(y_train, overlap_indices)
+
+    return X_train_cleaned, y_train_cleaned
+
+def logistic_regression(X_train, y_train, X_test, y_test, sizes):
+    accuracies = []
+    
+    for size in sizes:
+        X_train_subset = X_train[:size]
+        y_train_subset = y_train[:size]
         
-    # Добавляем столбец единиц для theta0
-    X = np.hstack([np.ones((X.shape[0], 1)), X])
-    
-    return X, y, mu, sigma
+        scaler = StandardScaler()
+        # Масштабирование данных, преобразование в одномерные векторы
+        X_train_subset_scaled = scaler.fit_transform(X_train_subset.reshape(X_train_subset.shape[0], -1))
+        X_test_scaled = scaler.transform(X_test.reshape(X_test.shape[0], -1))
 
-# Функция градиентного спуска с поддержкой векторизации
-def gradient_descent_vectorized(X, y, theta, alpha, iterations):
-    m = len(y)
-    cost_history = []
+        clf = LogisticRegression(max_iter=11, class_weight="balanced")
+        clf.fit(X_train_subset_scaled, y_train_subset)
 
-    for _ in range(iterations):
-        gradients = (1 / m) * X.T.dot(X.dot(theta) - y)
-        theta -= alpha * gradients
-        cost_history.append(compute_cost(X, y, theta))
-    
-    return theta, cost_history
+        y_pred = clf.predict(X_test_scaled)
+        accuracy = accuracy_score(y_test, y_pred)
+        accuracies.append(accuracy)
+        
+    return accuracies
 
-# Подготовка данных для нормализованной и ненормализованной модели
-features = ["Size", "Rooms"]
-target = "Price"
+####################################################################################################
 
-# Нормализованные данные
-X_norm, y_norm, mu_norm, sigma_norm = prepare_features(data2, features, target, normalize=True)
+images, labels, class_names = load_data(archive_path)
 
-# Ненормализованные данные
-X_nonorm, y_nonorm, _, _ = prepare_features(data2, features, target, normalize=False)
+print()
+print(f"Количество изображений: {images.shape[0]}")
+print(f"Размер изображений: {images.shape[1:]}")
+print(f"Количество классов: {len(class_names)}")
+print(f"Имена классов: {class_names}")
+print()
 
-# Начальные параметры
-theta_norm = np.zeros(X_norm.shape[1])
-theta_nonorm = np.zeros(X_nonorm.shape[1])
+check_class_balance(labels, class_names)
 
-# Параметры градиентного спуска
-alpha = 0.1
-alpha1 = 0.00000001
-iterations = 50
+display_random_images(images, labels, class_names)
 
-# Выполнение градиентного спуска
-theta_norm, cost_history_norm = gradient_descent_vectorized(X_norm, y_norm, theta_norm, alpha, iterations)
-theta_nonorm, cost_history_nonorm = gradient_descent_vectorized(X_nonorm, y_nonorm, theta_nonorm, alpha1, iterations)
+X_train, X_temp, y_train, y_temp = train_test_split(images, labels, test_size=0.15, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=2/3, random_state=42)
 
-# Сравнение графиков сходимости
-plt.plot(range(len(cost_history_norm)), cost_history_norm, label="Нормализованные признаки")
-plt.plot(range(len(cost_history_nonorm)), cost_history_nonorm, label="Ненормализованные признаки")
-plt.xlabel("Итерации")
-plt.ylabel("Значение функции потерь")
-plt.title("Сравнение сходимости")
-plt.legend()
+print()
+print(f"Размер обучающей выборки: {X_train.shape[0]}")
+print(f"Размер валидационной выборки: {X_val.shape[0]}")
+print(f"Размер тестовой выборки: {X_test.shape[0]}")
+print()
+
+print(f"Балансировка обучающей выборки:")
+check_class_balance(y_train, class_names)
+print()
+print(f"Балансировка валидационной выборки:")
+check_class_balance(y_val, class_names)
+print()
+print(f"Балансировка тестовой выборки:")
+check_class_balance(y_test, class_names)
+print()
+
+
+check_no_duplicates(X_train, X_val, X_test, y_train, y_val, y_test)
+print()
+
+X_train_cleaned, y_train_cleaned = remove_duplicates_h(X_train, y_train, X_val, y_val, X_test, y_test)
+print("Очистка дубликатов в обучающей выборке")
+print()
+
+check_no_duplicates(X_train_cleaned, X_val, X_test, y_train_cleaned, y_val, y_test)
+print()
+
+sizes = [50, 100, 1000, 20000]
+
+accuracies = logistic_regression(X_train_cleaned, y_train_cleaned, X_test, y_test, sizes)
+
+print("Размер обучающей выборки и точность классификатора:")
+for i in range(0,4):
+    print(str(sizes[i]) + ": " + str(accuracies[i]))
+
+plt.plot(sizes, accuracies, marker='o')
+plt.xlabel('Размер обучающей выборки')
+plt.ylabel('Точность')
+plt.title('Зависимость точности от размера обучающей выборки')
 plt.grid(True)
 plt.show()
-
-# Функция изменения коэффициента обучения α
-def compare_learning_rates(X, y, theta, alphas, iterations):
-    for iteration in iterations:
-        for alpha in alphas:
-            theta_temp = theta.copy()
-            _, cost_history = gradient_descent_vectorized(X, y, theta_temp, alpha, iteration)
-            plt.plot(range(len(cost_history)), cost_history, label=f"α = {alpha:.3f}")
-
-        plt.xlabel("Итерации")
-        plt.ylabel("Значение функции потерь")
-        plt.title(f"Влияние коэффициента обучения на сходимость ({iteration} итераций)")
-        plt.legend()
-        plt.grid(True)
-        plt.show()
-
-# Сравнение с различными α
-alphas = np.linspace(0.001, 0.1, 6).tolist()
-iteration_list = np.linspace(50, 150, 3, dtype=int).tolist()
-compare_learning_rates(X_norm, y_norm, np.zeros(X_norm.shape[1]), alphas, iteration_list)
-
-# Функция метода наименьших квадратов
-def normal_equation(X, y):
-    return np.linalg.pinv(X.T.dot(X)).dot(X.T).dot(y)
-
-# Аналитическое решение
-theta_analytical = normal_equation(X_nonorm, y_nonorm)
-
-# Сравнение результатов
-print("Параметры методом градиентного спуска (нормализованные):", theta_norm)
-print("Параметры аналитическим решением:", theta_analytical)
-
-# Функция оценки производительности модели
-def measure_performance(X, y, theta, alpha, iterations, vectorized=True):
-    start_time = time.time()
-    if vectorized:
-        _, _ = gradient_descent_vectorized(X, y, theta, alpha, iterations)
-    else:
-        _, _ = gradient_descent(X, y, theta, alpha, iterations)
-    elapsed_time = time.time() - start_time
-    return elapsed_time
-
-# Измерение времени
-time_vectorized = measure_performance(X_norm, y_norm, np.zeros(X_norm.shape[1]), alpha, iterations, vectorized=True)
-time_nonvectorized = measure_performance(X_norm, y_norm, np.zeros(X_norm.shape[1]), alpha, iterations, vectorized=False)
-
-print(f"Время (с веторизацией): {time_vectorized:.4f} секунд")
-print(f"Время (без векторизации): {time_nonvectorized:.4f} секунд")
