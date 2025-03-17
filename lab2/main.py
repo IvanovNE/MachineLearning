@@ -52,8 +52,8 @@ def evaluate_model(model, X_test, y_test):
 
 ################################################################################################
 
-archive_path = 'notMNIST_small.tar.gz'
-# archive_path = 'notMNIST_large.tar.gz'
+# archive_path = 'notMNIST_small.tar.gz'
+archive_path = 'notMNIST_large.tar.gz'
 
 images, labels, class_names = lab1f.load_data(archive_path)
 
@@ -101,7 +101,7 @@ hidden_layers = [1024, 512, 256]
 activations = ['relu', 'relu', 'relu', 'relu', 'sigmoid'] 
 dropout_rate = 0.05  
 initial_lr = 0.3
-epochs = 10
+epochs = 30
 batch_size = 64
 
 X_train_cleaned = X_train_cleaned.astype('float32') / 255.0
