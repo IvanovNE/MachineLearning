@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background50"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/ivPhoto"
+        android:layout_width="300dp"
+        android:layout_height="400dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="48dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_placeholder" />
+
+    <Button
+        android:id="@+id/btClear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@id/ivPhoto"
+        android:layout_below="@id/ivPhoto"
+        android:padding="0dp"
+        android:text="Удалить" />
+
+    <TextView
+        android:id="@+id/tvLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btClear"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Результат распознавания:"
+        android:textSize="22sp"
+        android:textColor="@color/black"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvLabel"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="-"
+        android:gravity="center"
+        android:background="@drawable/button_bg"
+        android:minWidth="50dp"
+        android:textColor="@color/white"
+        android:textSize="40sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvThresholdLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvNumber"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:text="Порог чувствительности: 0.50"
+        android:textSize="16sp"
+        android:textColor="@color/black" />
+
+    <SeekBar
+        android:id="@+id/thresholdSeekBar"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvThresholdLabel"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp"
+        android:max="100"
+        android:progress="50" />
+
+
+    <LinearLayout
+        android:id="@+id/buttonLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:layout_marginBottom="64dp"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btTake"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Изображение с камеры" />
+
+        <Button
+            android:id="@+id/btLoad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Загрузить изображение" />
+    </LinearLayout>
+</RelativeLayout>
